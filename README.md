@@ -253,3 +253,6 @@ All the models were collected from Sketchfab
 ## Completion Summary (Task 1)
 
 This implementation fulfills all core Task 1 requirements. Backend + frontend integrate cleanly, containerization provided, and documentation (this README) makes the project reproducible.
+
+## Screen shot of the working application
+![Screenshot](./static/screenshot.png)
