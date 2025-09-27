@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Try-On AR - AI Engineer Assessment</title>
+    
+    <!-- AR Libraries -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-aframe.prod.js"></script>
+    
+    <!-- Styling -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/app.css" rel="stylesheet">
+    
+</head>
+<body>
+    <div class="app-container">
+        <!-- Control Panel -->
+        <div class="control-panel" id="controlPanel">
+            <!-- Toggle Button -->
+            <button class="toggle-btn" id="toggleBtn" title="Toggle Panel">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <!-- Panel Content -->
+            <div class="panel-content" id="panelContent">
+                <!-- Header -->
+                <div class="header">
+                    <h1><i class="fas fa-magic"></i> Virtual Try-On</h1>
+                    <p>AR face tracking with real-time accessories</p>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="status-bar" id="statusBar">
+                    <div class="status-indicator"></div>
+                    <span id="statusText">Initializing camera...</span>
+                </div>
+
+                <!-- Tabs Container -->
+                <div class="tabs-container">
+                <!-- Tab Navigation -->
+                <div class="tabs-nav">
+                    <button class="tab-button active" data-tab="hats">
+                        <i class="fas fa-hat-wizard"></i>
+                        <span>Hats</span>
+                    </button>
+                    <button class="tab-button" data-tab="glasses">
+                        <i class="fas fa-glasses"></i>
+                        <span>Glasses</span>
+                    </button>
+                </div>
+
+                <!-- Hats Tab -->
+                <div class="tab-content active" id="hats-tab">
+                    <div class="tab-header">
+                        <span class="tab-title">Choose Hat</span>
+                        <span class="tab-count" id="hatsCount">Loading...</span>
+                    </div>
+                    <div class="models-grid" id="hatsGrid">
+                        <!-- Hat models will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Glasses Tab -->
+                <div class="tab-content" id="glasses-tab">
+                    <div class="tab-header">
+                        <span class="tab-title">Choose Glasses</span>
+                        <span class="tab-count" id="glassesCount">Loading...</span>
+                    </div>
+                    <div class="models-grid" id="glassesGrid">
+                        <!-- Glasses models will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clear All Button -->
+            <button class="clear-all-btn" id="clearAllBtn">
+                <i class="fas fa-times"></i> Clear All Accessories
+            </button>
+            </div> <!-- End panel-content -->
+        </div>
+
+        <!-- AR Scene Container -->
+        <div class="ar-scene-container">
+            <!-- Compatibility Message (hidden by default) -->
+            <div id="compatibilityMessage" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; z-index: 100; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; max-width: 80%;">
+                <h3><i class="fas fa-exclamation-triangle"></i> AR Not Available</h3>
+                <p id="compatibilityText">Your device or browser doesn't support AR features.</p>
+                <div style="margin-top: 15px;">
+                    <p><strong>For best experience:</strong></p>
+                    <ul style="text-align: left; margin: 10px auto; display: inline-block;">
+                        <li>Use Chrome or Safari on mobile</li>
+                        <li>Allow camera permissions</li>
+                        <li>Ensure good lighting</li>
+                        <li>Use HTTPS connection</li>
+                    </ul>
+                </div>
+                <button onclick="location.reload()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 10px;">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            </div>
+            
+            <a-scene 
+                mindar-face 
+                embedded 
+                color-space="sRGB" 
+                renderer="colorManagement: true, physicallyCorrectLights" 
+                vr-mode-ui="enabled: false" 
+                device-orientation-permission-ui="enabled: false"
+                id="arScene">
+                <a-assets id="arAssets">
+                    <a-asset-item id="headModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/face-tracking/assets/sparkar/headOccluder.glb"></a-asset-item>
+                    <!-- Dynamic assets will be loaded here -->
+                </a-assets>
+
+                <a-camera active="false" position="0 0 0"></a-camera>
+
+                <!-- Head occluder for better AR experience -->
+                <a-entity mindar-face-target="anchorIndex: 168">
+                    <a-gltf-model 
+                        mindar-face-occluder 
+                        position="0.02 -0.25 0.25" 
+                        rotation="0 0 0" 
+                        scale="0.075 0.08 0.08" 
+                        src="#headModel">
+                    </a-gltf-model>
+                </a-entity>
+
+                <!-- Dynamic entities will be added here -->
+            </a-scene>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cube me-2"></i>
+                    {% if action == 'create' %}Create New 3D Model{% else %}Edit {{ model.name }}{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <!-- Basic Information -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Model Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{{ model.name if model else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="category_id" class="form-label">Category *</label>
+                                <select class="form-select" id="category_id" name="category_id" required>
+                                    <option value="">Select Category</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}" 
+                                            {% if model and model.category_id == category.id %}selected{% endif %}>
+                                        {{ category.name }} (Anchor: {{ category.anchor_index }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ model.description if model else '' }}</textarea>
+                    </div>
+
+                    <!-- Current Files (Edit Mode) -->
+                    {% if action == 'edit' and model %}
+                    <div class="file-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Current Files</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>3D Model:</strong>
+                                {% if model.filename %}
+                                <br><a href="/models/{{ model.filename }}" target="_blank" class="text-decoration-none">
+                                    <i class="fas fa-file-3d me-1"></i>{{ model.original_filename or model.filename }}
+                                </a>
+                                <br><small class="text-muted">{{ "%.1f MB"|format(model.file_size / 1024 / 1024) if model.file_size else 'Unknown size' }}</small>
+                                {% else %}
+                                <br><span class="text-muted">No file uploaded</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Thumbnail:</strong>
+                                {% if model.thumbnail_path %}
+                                <br><img src="/static/{{ model.thumbnail_path }}" alt="Current thumbnail" class="img-thumbnail mb-2" style="max-width: 100px;">
+                                {% else %}
+                                <br><span class="text-muted">No thumbnail</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- File Uploads -->
+                    <div class="file-upload-section">
+                        <h6><i class="fas fa-upload me-2"></i>{% if action == 'edit' %}Replace {% endif %}Files</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="model_file" class="form-label">
+                                        3D Model File {% if action == 'create' %}*{% endif %}
+                                    </label>
+                                    <input type="file" class="form-control" id="model_file" name="model_file" 
+                                           accept=".glb,.gltf" {% if action == 'create' %}required{% endif %}>
+                                    <div class="form-text">Supported formats: .glb, .gltf (Max 50MB)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="thumbnail_file" class="form-label">Thumbnail (Optional)</label>
+                                    <input type="file" class="form-control" id="thumbnail_file" name="thumbnail_file" 
+                                           accept=".jpg,.jpeg,.png,.webp">
+                                    <div class="form-text">Supported: .jpg, .jpeg, .png, .webp</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3D Positioning -->
+                    <hr>
+                    <h6><i class="fas fa-sliders-h me-2"></i>3D Positioning</h6>
+                    
+                    <!-- Position -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="position_x" class="form-label">Position X</label>
+                                <input type="number" class="form-control" id="position_x" name="position_x" 
+                                       step="0.01" value="{{ model.position_x if model else 0.0 }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="position_y" class="form-label">Position Y</label>
+                                <input type="number" class="form-control" id="position_y" name="position_y" 
+                                       step="0.01" value="{{ model.position_y if model else 0.0 }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="position_z" class="form-label">Position Z</label>
+                                <input type="number" class="form-control" id="position_z" name="position_z" 
+                                       step="0.01" value="{{ model.position_z if model else 0.0 }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rotation -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="rotation_x" class="form-label">Rotation X (°)</label>
+                                <input type="number" class="form-control" id="rotation_x" name="rotation_x" 
+                                       step="1.0" value="{{ model.rotation_x if model else 0.0 }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="rotation_y" class="form-label">Rotation Y (°)</label>
+                                <input type="number" class="form-control" id="rotation_y" name="rotation_y" 
+                                       step="1.0" value="{{ model.rotation_y if model else 0.0 }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="rotation_z" class="form-label">Rotation Z (°)</label>
+                                <input type="number" class="form-control" id="rotation_z" name="rotation_z" 
+                                       step="1.0" value="{{ model.rotation_z if model else 0.0 }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scale -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="scale_x" class="form-label">Scale X</label>
+                                <input type="number" class="form-control" id="scale_x" name="scale_x" 
+                                       step="0.01" min="0.01" value="{{ model.scale_x if model else 1.0 }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="scale_y" class="form-label">Scale Y</label>
+                                <input type="number" class="form-control" id="scale_y" name="scale_y" 
+                                       step="0.01" min="0.01" value="{{ model.scale_y if model else 1.0 }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="scale_z" class="form-label">Scale Z</label>
+                                <input type="number" class="form-control" id="scale_z" name="scale_z" 
+                                       step="0.01" min="0.01" value="{{ model.scale_z if model else 1.0 }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <hr>
+                    <h6><i class="fas fa-cog me-2"></i>Advanced Settings</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="anchor_index" class="form-label">Face Anchor Override</label>
+                                <input type="number" class="form-control" id="anchor_index" name="anchor_index" 
+                                       min="0" max="467" value="{{ model.anchor_index if model else '' }}"
+                                       placeholder="Leave empty to use category default">
+                                <div class="form-text">Override the category's default face anchor point (0-467)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                           {% if not model or model.is_active %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_active">
+                                        Active (visible in AR app)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between pt-3 border-top">
+                        <a href="/admin/models" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-1"></i>
+                            {% if action == 'create' %}Create Model{% else %}Update Model{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Preview file sizes and types
+document.getElementById('model_file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const size = (file.size / 1024 / 1024).toFixed(1);
+        console.log(`Model file: ${file.name} (${size} MB)`);
+    }
+});
+
+document.getElementById('thumbnail_file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const size = (file.size / 1024).toFixed(1);
+        console.log(`Thumbnail: ${file.name} (${size} KB)`);
+    }
+});
+
+// Quick scale adjustment buttons
+function addQuickScaleButtons() {
+    const scaleInputs = ['scale_x', 'scale_y', 'scale_z'];
+    scaleInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        const container = input.parentElement;
+        
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'btn-group btn-group-sm mt-1';
+        btnGroup.innerHTML = `
+            <button type="button" class="btn btn-outline-secondary" onclick="setScale('${inputId}', 0.1)">0.1x</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="setScale('${inputId}', 0.5)">0.5x</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="setScale('${inputId}', 1.0)">1.0x</button>
+        `;
+        container.appendChild(btnGroup);
+    });
+}
+
+function setScale(inputId, value) {
+    document.getElementById(inputId).value = value;
+}
+
+// Add quick scale buttons after page loads
+document.addEventListener('DOMContentLoaded', addQuickScaleButtons);
+</script>
+{% endblock %}

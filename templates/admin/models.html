@@ -1,0 +1,177 @@
+{% extends 'admin/base.html' %}
+
+{% block header_actions %}
+  <a href="/admin/models/create" class="btn btn-success"><i class="fas fa-plus me-1"></i> Add Model</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="fas fa-cube me-2"></i>
+        3D Models
+      </h5>
+    </div>
+    <div class="card-body">
+      {% if models %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>File</th>
+                <th>Thumbnail</th>
+                <th>Size</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for model, category in models %}
+                <tr>
+                  <td>{{ model.id }}</td>
+                  <td>
+                    <strong>{{ model.name }}</strong>
+                    {% if model.description %}
+                      <br /><small class="text-muted">{{ model.description[:50] }}{% if model.description|length > 50 %}...{% endif %}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge bg-secondary">{{ category.name }}</span>
+                  </td>
+                  <td>
+                    {% if model.filename %}
+                      <a href="/models/{{ model.filename }}" target="_blank" class="text-decoration-none">
+                        <i class="fas fa-file-3d me-1"></i>
+                        {{ model.original_filename or model.filename }}
+                      </a>
+                    {% else %}
+                      <span class="text-muted">No file</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if model.thumbnail_path %}
+                      <img src="/static/{{ model.thumbnail_path }}" alt="Thumbnail" class="img-thumbnail" style="max-width: 40px; max-height: 40px;" />
+                    {% else %}
+                      <span class="text-muted">No thumbnail</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if model.file_size %}
+                      <small>{{ '%.1f'|format(model.file_size / 1024 / 1024) }} MB</small>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if model.is_active %}
+                      <span class="badge bg-success">Active</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <small class="text-muted">{{ model.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <a href="/admin/models/{{ model.id }}/edit" class="btn btn-outline-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                      <button type="button"
+                        class="btn {% if model.is_active %}
+                          btn-outline-warning
+                        {% else %}
+                          btn-outline-success
+                        {% endif %}"
+                        onclick="toggleModel({{ model.id }}, {{ model.is_active|lower }})"
+                        title="{% if model.is_active %}
+                          Deactivate
+                        {% else %}
+                          Activate
+                        {% endif %}">
+                        <i class="fas fa-eye{% if model.is_active %}-slash{% endif %}"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-danger" onclick="deleteModel({{ model.id }})" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-cube fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">No models yet</h5>
+          <p class="text-muted">Upload your first 3D model to get started</p>
+          <a href="/admin/models/create" class="btn btn-success"><i class="fas fa-plus me-1"></i> Add Model</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    function deleteModel(id) {
+      if (confirm('Are you sure you want to delete this model? This will also delete associated files.')) {
+        fetch(`/admin/models/${id}/delete`, {
+          method: 'POST'
+        }).then((response) => {
+          if (response.ok) {
+            location.reload()
+          } else {
+            alert('Error deleting model')
+          }
+        })
+      }
+    }
+    
+    function toggleModel(id, currentStatus) {
+      fetch(`/admin/models/${id}/toggle`, {
+        method: 'POST'
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json()
+          } else {
+            throw new Error('Toggle failed')
+          }
+        })
+        .then((data) => {
+          // Find the row containing this model ID
+          const rows = document.querySelectorAll('tbody tr')
+          let targetRow = null
+          for (let row of rows) {
+            const idCell = row.querySelector('td:first-child')
+            if (idCell && idCell.textContent.trim() == id) {
+              targetRow = row
+              break
+            }
+          }
+    
+          if (targetRow) {
+            const statusCell = targetRow.querySelector('td:nth-child(7)') // Status column
+            const toggleBtn = targetRow.querySelector('.btn:not(.btn-outline-primary):not(.btn-outline-danger)') // Toggle button
+    
+            if (data.is_active) {
+              statusCell.innerHTML = '<span class="badge bg-success">Active</span>'
+              toggleBtn.className = 'btn btn-outline-warning'
+              toggleBtn.title = 'Deactivate'
+              toggleBtn.querySelector('i').className = 'fas fa-eye-slash'
+            } else {
+              statusCell.innerHTML = '<span class="badge bg-secondary">Inactive</span>'
+              toggleBtn.className = 'btn btn-outline-success'
+              toggleBtn.title = 'Activate'
+              toggleBtn.querySelector('i').className = 'fas fa-eye'
+            }
+          }
+        })
+        .catch((error) => {
+          alert('Error toggling model status: ' + error.message)
+        })
+    }
+  </script>
+{% endblock %}

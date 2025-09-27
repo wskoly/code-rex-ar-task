@@ -1,0 +1,31 @@
+services:
+  # FastAPI Virtual Try-On Application with SQLite
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"  # FastAPI default port
+    volumes:
+      # Persistent storage for SQLite database
+      - ./data:/app/data
+      # Mount models directory for uploaded files
+      - ./models:/app/models
+      # Mount static files (thumbnails, etc.)
+      - ./static:/app/static
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=sqlite:///./data/virtual_tryon.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - virtual-tryon-network
+
+networks:
+  virtual-tryon-network:
+    driver: bridge

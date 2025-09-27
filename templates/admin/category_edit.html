@@ -1,0 +1,143 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tags me-2"></i>
+                    Edit {{ category.name.title() }} Category
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <!-- Basic Information -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Category Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ category.name }}" required>
+                        <div class="form-text">
+                            <strong>Warning:</strong> Changing this name may break existing functionality. 
+                            Current system expects "hats" and "glasses" categories.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ category.description if category.description else '' }}</textarea>
+                        <div class="form-text">Brief description of this accessory category</div>
+                    </div>
+
+                    <!-- Face Anchor Configuration -->
+                    <div class="mb-3">
+                        <label for="anchor_index" class="form-label">Face Anchor Index *</label>
+                        <input type="number" class="form-control" id="anchor_index" name="anchor_index" 
+                               min="0" max="467" value="{{ category.anchor_index }}" required>
+                        <div class="form-text">
+                            Face landmark point where accessories will be anchored (0-467).
+                            <br><strong>Common anchors:</strong> 
+                            Face outline: 0-16, Eyes: 33-70, Nose: 1-9, Mouth: 17-18, Top of head: ~10
+                        </div>
+                    </div>
+
+                    <!-- Current Usage Info -->
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Current Usage</h6>
+                        <ul class="mb-0">
+                            <li><strong>Category:</strong> {{ category.name }}</li>
+                            <li><strong>Current Anchor:</strong> {{ category.anchor_index }}</li>
+                            <li><strong>Created:</strong> {{ category.created_at.strftime('%Y-%m-%d %H:%M') }}</li>
+                        </ul>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between pt-3 border-top">
+                        <a href="/admin/categories" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Update Category
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Face Anchor Reference -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    Face Anchor Reference Guide
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Common Anchor Points:</h6>
+                        <ul class="small">
+                            <li><strong>10:</strong> Top of head (perfect for hats)</li>
+                            <li><strong>168:</strong> Center of face between eyes (good for glasses)</li>
+                            <li><strong>9:</strong> Nose tip</li>
+                            <li><strong>0-16:</strong> Face outline/jawline</li>
+                            <li><strong>33, 133:</strong> Eye corners</li>
+                            <li><strong>61, 291:</strong> Mouth corners</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Tips for Anchor Selection:</h6>
+                        <ul class="small">
+                            <li>Hats work best with top head anchors (8-10)</li>
+                            <li>Glasses need stable eye-area anchors (168, 6)</li>
+                            <li>Lower numbers = more stable tracking</li>
+                            <li>Test with different face angles</li>
+                            <li>Consider accessory weight distribution</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validate anchor index input
+document.getElementById('anchor_index').addEventListener('change', function(e) {
+    const value = parseInt(e.target.value);
+    if (value < 0 || value > 467) {
+        e.target.setCustomValidity('Anchor index must be between 0 and 467');
+    } else {
+        e.target.setCustomValidity('');
+    }
+});
+
+// Category name validation warning
+document.getElementById('name').addEventListener('input', function(e) {
+    const originalName = '{{ category.name }}';
+    const currentName = e.target.value.toLowerCase().trim();
+    
+    if (currentName !== originalName && (originalName === 'hats' || originalName === 'glasses')) {
+        // Show warning for system categories
+        if (!document.querySelector('.name-warning')) {
+            const warning = document.createElement('div');
+            warning.className = 'alert alert-warning mt-2 name-warning';
+            warning.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i><strong>Warning:</strong> This is a system category. Changing the name may break existing functionality.';
+            e.target.parentElement.appendChild(warning);
+        }
+    } else {
+        // Remove warning
+        const warning = document.querySelector('.name-warning');
+        if (warning) {
+            warning.remove();
+        }
+    }
+});
+</script>
+{% endblock %}

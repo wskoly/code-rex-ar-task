@@ -1,0 +1,83 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-tags fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Categories</h5>
+                <p class="card-text">Manage accessory categories</p>
+                <a href="/admin/categories" class="btn btn-primary">
+                    <i class="fas fa-eye me-1"></i> View
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-cube fa-3x text-success mb-3"></i>
+                <h5 class="card-title">3D Models</h5>
+                <p class="card-text">Upload and manage 3D models</p>
+                <a href="/admin/models" class="btn btn-success">
+                    <i class="fas fa-eye me-1"></i> View
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-plus fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Add New Model</h5>
+                <p class="card-text">Upload a new 3D model</p>
+                <a href="/admin/models/create" class="btn btn-info">
+                    <i class="fas fa-plus me-1"></i> Create
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-external-link-alt fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">View Site</h5>
+                <p class="card-text">Test the AR application</p>
+                <a href="/" target="_blank" class="btn btn-warning">
+                    <i class="fas fa-external-link-alt me-1"></i> Open
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Quick Start Guide
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-upload text-success me-2"></i>Upload Models</h6>
+                        <p class="small text-muted">Upload .glb or .gltf 3D models with optional thumbnails</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-sliders-h text-info me-2"></i>Configure Position</h6>
+                        <p class="small text-muted">Adjust position, rotation, and scale for perfect fit</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-eye text-warning me-2"></i>Test Live</h6>
+                        <p class="small text-muted">View your models in the AR application</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
