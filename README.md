@@ -147,8 +147,6 @@ Core class: `VirtualTryOnApp`
 - Provides offline fallback set if backend unreachable.
 - Displays UI feedback via status bar + toast notifications.
 
-> Note: No extra temporal smoothing beyond MindAR's internal filtering; can be extended (see Future Enhancements).
-
 ---
 
 ## Adding New Models
